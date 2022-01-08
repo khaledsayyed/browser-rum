@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": true,
+    "allowJs": true,
+    "module": "commonjs",
+    "rootDir": "./src/",
+    "outDir": "./cjs/"
+  },
+  "include": ["./src"],
+  "exclude": ["./src/**/*.spec.ts"]
+}
