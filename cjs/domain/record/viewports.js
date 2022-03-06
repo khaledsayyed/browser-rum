@@ -65,7 +65,7 @@ exports.getVisualViewport = getVisualViewport;
 // excludes the width of any rendered classic scrollbar that is fixed to the visual viewport
 function getWindowWidth() {
     var visual = window.visualViewport;
-    if ((0, browser_core_1.isExperimentalFeatureEnabled)('visualviewport') && visual) {
+    if (browser_core_1.isExperimentalFeatureEnabled('visualviewport') && visual) {
         return visual.width * visual.scale;
     }
     return window.innerWidth || 0;
@@ -74,7 +74,7 @@ exports.getWindowWidth = getWindowWidth;
 // excludes the height of any rendered classic scrollbar that is fixed to the visual viewport
 function getWindowHeight() {
     var visual = window.visualViewport;
-    if ((0, browser_core_1.isExperimentalFeatureEnabled)('visualviewport') && visual) {
+    if (browser_core_1.isExperimentalFeatureEnabled('visualviewport') && visual) {
         return visual.height * visual.scale;
     }
     return window.innerHeight || 0;
@@ -82,7 +82,7 @@ function getWindowHeight() {
 exports.getWindowHeight = getWindowHeight;
 function getScrollX() {
     var visual = window.visualViewport;
-    if ((0, browser_core_1.isExperimentalFeatureEnabled)('visualviewport') && visual) {
+    if (browser_core_1.isExperimentalFeatureEnabled('visualviewport') && visual) {
         return visual.pageLeft - visual.offsetLeft;
     }
     if (window.scrollX !== undefined) {
@@ -93,7 +93,7 @@ function getScrollX() {
 exports.getScrollX = getScrollX;
 function getScrollY() {
     var visual = window.visualViewport;
-    if ((0, browser_core_1.isExperimentalFeatureEnabled)('visualviewport') && visual) {
+    if (browser_core_1.isExperimentalFeatureEnabled('visualviewport') && visual) {
         return visual.pageTop - visual.offsetTop;
     }
     if (window.scrollY !== undefined) {

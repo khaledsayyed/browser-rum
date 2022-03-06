@@ -1,3 +1,4 @@
+import { buildUrl, isExperimentalFeatureEnabled } from '@datadog/browser-core';
 import { CENSORED_STRING_MARK } from '../../constants';
 import { shouldMaskNode } from './privacy';
 var serializedNodeIds = new WeakMap();
@@ -19,6 +20,40 @@ export function getSerializedNodeId(node) {
 }
 export function setSerializedNodeId(node, serializeNodeId) {
     serializedNodeIds.set(node, serializeNodeId);
+}
+var URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")([^"]*)"|([^)]*))\)/gm;
+var ABSOLUTE_URL = /^[A-Za-z]+:|^\/\//;
+var DATA_URI = /^data:.*,/i;
+export function makeStylesheetUrlsAbsolute(cssText, baseUrl) {
+    if (isExperimentalFeatureEnabled('base-tag')) {
+        return cssText;
+    }
+    return cssText.replace(URL_IN_CSS_REF, function (origin, quote1, path1, quote2, path2, path3) {
+        var filePath = path1 || path2 || path3;
+        if (!filePath || ABSOLUTE_URL.test(filePath) || DATA_URI.test(filePath)) {
+            return origin;
+        }
+        var maybeQuote = quote1 || quote2 || '';
+        return "url(" + maybeQuote + makeUrlAbsolute(filePath, baseUrl) + maybeQuote + ")";
+    });
+}
+var SRCSET_URLS = /(^\s*|,\s*)([^\s,]+)/g;
+export function makeSrcsetUrlsAbsolute(attributeValue, baseUrl) {
+    if (isExperimentalFeatureEnabled('base-tag')) {
+        return attributeValue;
+    }
+    return attributeValue.replace(SRCSET_URLS, function (_, prefix, url) { return "" + prefix + makeUrlAbsolute(url, baseUrl); });
+}
+export function makeUrlAbsolute(url, baseUrl) {
+    try {
+        if (isExperimentalFeatureEnabled('base-tag')) {
+            return url;
+        }
+        return buildUrl(url.trim(), baseUrl).href;
+    }
+    catch (_) {
+        return url;
+    }
 }
 /**
  * Get the element "value" to be serialized as an attribute or an input update record. It respects

@@ -49,7 +49,6 @@ export function doStartDeflateWorker(createDeflateWorkerImpl) {
         return worker_1;
     }
     catch (error) {
-        // @ts-ignore because
         onError(error);
     }
 }

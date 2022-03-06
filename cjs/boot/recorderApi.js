@@ -4,10 +4,10 @@ exports.makeRecorderApi = void 0;
 var browser_core_1 = require("@datadog/browser-core");
 var browser_rum_core_1 = require("@datadog/browser-rum-core");
 var replayStats_1 = require("../domain/replayStats");
-var segmentCollection_1 = require("../domain/segmentCollection");
+var startDeflateWorker_1 = require("../domain/segmentCollection/startDeflateWorker");
 function makeRecorderApi(startRecordingImpl, startDeflateWorkerImpl) {
-    if (startDeflateWorkerImpl === void 0) { startDeflateWorkerImpl = segmentCollection_1.startDeflateWorker; }
-    if ((0, browser_core_1.canUseEventBridge)()) {
+    if (startDeflateWorkerImpl === void 0) { startDeflateWorkerImpl = startDeflateWorker_1.startDeflateWorker; }
+    if (browser_core_1.canUseEventBridge()) {
         return {
             start: browser_core_1.noop,
             stop: browser_core_1.noop,
@@ -51,7 +51,7 @@ function makeRecorderApi(startRecordingImpl, startDeflateWorkerImpl) {
                     return;
                 }
                 state = { status: 2 /* Starting */ };
-                (0, browser_core_1.runOnReadyState)('interactive', function () {
+                browser_core_1.runOnReadyState('interactive', function () {
                     if (state.status !== 2 /* Starting */) {
                         return;
                     }

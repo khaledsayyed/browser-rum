@@ -21,10 +21,10 @@ function serializeNodeWithId(node, options) {
         return null;
     }
     // Try to reuse the previous id
-    var id = (0, serializationUtils_1.getSerializedNodeId)(node) || generateNextId();
+    var id = serializationUtils_1.getSerializedNodeId(node) || generateNextId();
     var serializedNodeWithId = serializedNode;
     serializedNodeWithId.id = id;
-    (0, serializationUtils_1.setSerializedNodeId)(node, id);
+    serializationUtils_1.setSerializedNodeId(node, id);
     if (options.serializedNodeIds) {
         options.serializedNodeIds.add(id);
     }
@@ -83,15 +83,15 @@ function serializeElementNode(element, options) {
     var isSVG = isSVGElement(element) || undefined;
     // For performance reason, we don't use getNodePrivacyLevel directly: we leverage the
     // parentNodePrivacyLevel option to avoid iterating over all parents
-    var nodePrivacyLevel = (0, privacy_1.reducePrivacyLevel)((0, privacy_1.getNodeSelfPrivacyLevel)(element), options.parentNodePrivacyLevel);
+    var nodePrivacyLevel = privacy_1.reducePrivacyLevel(privacy_1.getNodeSelfPrivacyLevel(element), options.parentNodePrivacyLevel);
     if (nodePrivacyLevel === constants_1.NodePrivacyLevel.HIDDEN) {
         var _b = element.getBoundingClientRect(), width = _b.width, height = _b.height;
         return {
             type: types_1.NodeType.Element,
             tagName: tagName,
             attributes: (_a = {
-                    rr_width: "".concat(width, "px"),
-                    rr_height: "".concat(height, "px")
+                    rr_width: width + "px",
+                    rr_height: height + "px"
                 },
                 _a[constants_1.PRIVACY_ATTR_NAME] = constants_1.PRIVACY_ATTR_VALUE_HIDDEN,
                 _a),
@@ -114,7 +114,7 @@ function serializeElementNode(element, options) {
             childNodesSerializationOptions = options;
         }
         else {
-            childNodesSerializationOptions = (0, tslib_1.__assign)((0, tslib_1.__assign)({}, options), { parentNodePrivacyLevel: nodePrivacyLevel, ignoreWhiteSpace: tagName === 'head' });
+            childNodesSerializationOptions = tslib_1.__assign(tslib_1.__assign({}, options), { parentNodePrivacyLevel: nodePrivacyLevel, ignoreWhiteSpace: tagName === 'head' });
         }
         childNodes = serializeChildNodes(element, childNodesSerializationOptions);
     }
@@ -204,7 +204,7 @@ function serializeTextNode(textNode, options) {
     // The parent node may not be a html element which has a tagName attribute.
     // So just let it be undefined which is ok in this use case.
     var parentTagName = (_a = textNode.parentElement) === null || _a === void 0 ? void 0 : _a.tagName;
-    var textContent = (0, privacy_1.getTextContent)(textNode, options.ignoreWhiteSpace || false, options.parentNodePrivacyLevel);
+    var textContent = privacy_1.getTextContent(textNode, options.ignoreWhiteSpace || false, options.parentNodePrivacyLevel);
     if (!textContent) {
         return;
     }
@@ -222,7 +222,7 @@ function serializeCDataNode() {
 }
 function serializeChildNodes(node, options) {
     var result = [];
-    (0, utils_1.forEach)(node.childNodes, function (childNode) {
+    utils_1.forEach(node.childNodes, function (childNode) {
         var serializedChildNode = serializeNodeWithId(childNode, options);
         if (serializedChildNode) {
             result.push(serializedChildNode);
@@ -232,6 +232,7 @@ function serializeChildNodes(node, options) {
 }
 exports.serializeChildNodes = serializeChildNodes;
 function serializeAttribute(element, nodePrivacyLevel, attributeName) {
+    var _a, _b, _c;
     if (nodePrivacyLevel === constants_1.NodePrivacyLevel.HIDDEN) {
         // dup condition for direct access case
         return null;
@@ -268,7 +269,19 @@ function serializeAttribute(element, nodePrivacyLevel, attributeName) {
     if (attributeValue.length > privacy_1.MAX_ATTRIBUTE_VALUE_CHAR_LENGTH && attributeValue.slice(0, 5) === 'data:') {
         return 'data:truncated';
     }
-    return attributeValue;
+    // Rebuild absolute URLs from relative (without using <base> tag)
+    var doc = element.ownerDocument;
+    switch (attributeName) {
+        case 'src':
+        case 'href':
+            return serializationUtils_1.makeUrlAbsolute(attributeValue, (_a = doc.location) === null || _a === void 0 ? void 0 : _a.href);
+        case 'srcset':
+            return serializationUtils_1.makeSrcsetUrlsAbsolute(attributeValue, (_b = doc.location) === null || _b === void 0 ? void 0 : _b.href);
+        case 'style':
+            return serializationUtils_1.makeStylesheetUrlsAbsolute(attributeValue, (_c = doc.location) === null || _c === void 0 ? void 0 : _c.href);
+        default:
+            return attributeValue;
+    }
 }
 exports.serializeAttribute = serializeAttribute;
 var _nextId = 1;
@@ -321,7 +334,7 @@ function getAttributesForPrivacyLevel(element, nodePrivacyLevel) {
     }
     if (element.value &&
         (tagName === 'textarea' || tagName === 'select' || tagName === 'option' || tagName === 'input')) {
-        var formValue = (0, serializationUtils_1.getElementInputValue)(element, nodePrivacyLevel);
+        var formValue = serializationUtils_1.getElementInputValue(element, nodePrivacyLevel);
         if (formValue !== undefined) {
             safeAttrs.value = formValue;
         }
@@ -343,7 +356,7 @@ function getAttributesForPrivacyLevel(element, nodePrivacyLevel) {
         if (cssText && stylesheet) {
             delete safeAttrs.rel;
             delete safeAttrs.href;
-            safeAttrs._cssText = cssText;
+            safeAttrs._cssText = serializationUtils_1.makeStylesheetUrlsAbsolute(cssText, stylesheet.href);
         }
     }
     // dynamic stylesheet
@@ -353,7 +366,7 @@ function getAttributesForPrivacyLevel(element, nodePrivacyLevel) {
         !(element.innerText || element.textContent || '').trim().length) {
         var cssText = getCssRulesString(element.sheet);
         if (cssText) {
-            safeAttrs._cssText = cssText;
+            safeAttrs._cssText = serializationUtils_1.makeStylesheetUrlsAbsolute(cssText, location.href);
         }
     }
     /**
@@ -369,7 +382,7 @@ function getAttributesForPrivacyLevel(element, nodePrivacyLevel) {
         if (nodePrivacyLevel === constants_1.NodePrivacyLevel.ALLOW) {
             safeAttrs.checked = !!inputElement.checked;
         }
-        else if ((0, privacy_1.shouldMaskNode)(inputElement, nodePrivacyLevel)) {
+        else if (privacy_1.shouldMaskNode(inputElement, nodePrivacyLevel)) {
             safeAttrs.checked = constants_1.CENSORED_STRING_MARK;
         }
     }

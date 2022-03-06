@@ -47,18 +47,18 @@ var Segment = /** @class */ (function () {
             }
         });
         worker.addEventListener('message', listener);
-        this.worker.postMessage({ data: "{\"records\":[".concat(JSON.stringify(initialRecord)), id: this.id, action: 'write' });
+        this.worker.postMessage({ data: "{\"records\":[" + JSON.stringify(initialRecord), id: this.id, action: 'write' });
     }
     Segment.prototype.addRecord = function (record) {
         this.end = record.timestamp;
         this.recordsCount += 1;
         replayStats.addRecord(this.context.view.id);
         this.hasFullSnapshot || (this.hasFullSnapshot = record.type === RecordType.FullSnapshot);
-        this.worker.postMessage({ data: ",".concat(JSON.stringify(record)), id: this.id, action: 'write' });
+        this.worker.postMessage({ data: "," + JSON.stringify(record), id: this.id, action: 'write' });
     };
     Segment.prototype.flush = function (reason) {
         this.worker.postMessage({
-            data: "],".concat(JSON.stringify(this.meta).slice(1), "\n"),
+            data: "]," + JSON.stringify(this.meta).slice(1) + "\n",
             id: this.id,
             action: 'flush',
         });

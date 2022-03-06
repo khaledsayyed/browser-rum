@@ -1,4 +1,4 @@
-export { IncrementalSource } from './domain/record';
+export { IncrementalSource } from './domain/record/types';
 export var RecordType = {
     FullSnapshot: 2,
     IncrementalSnapshot: 3,

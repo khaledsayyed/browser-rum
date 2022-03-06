@@ -40,8 +40,8 @@ function doStartDeflateWorker(createDeflateWorkerImpl) {
     if (createDeflateWorkerImpl === void 0) { createDeflateWorkerImpl = deflateWorker_1.createDeflateWorker; }
     try {
         var worker_1 = createDeflateWorkerImpl();
-        worker_1.addEventListener('error', (0, browser_core_1.monitor)(onError));
-        worker_1.addEventListener('message', (0, browser_core_1.monitor)(function (_a) {
+        worker_1.addEventListener('error', browser_core_1.monitor(onError));
+        worker_1.addEventListener('message', browser_core_1.monitor(function (_a) {
             var data = _a.data;
             if (data.type === 'errored') {
                 onError(data.error);
@@ -54,7 +54,6 @@ function doStartDeflateWorker(createDeflateWorkerImpl) {
         return worker_1;
     }
     catch (error) {
-        // @ts-ignore because
         onError(error);
     }
 }
@@ -68,18 +67,18 @@ function onInitialized(worker) {
 function onError(error) {
     if (state.status === 1 /* Loading */) {
         browser_core_1.display.error('Session Replay recording failed to start: an error occurred while creating the Worker:', error);
-        if (error instanceof Event || (error instanceof Error && (0, browser_core_1.includes)(error.message, 'Content Security Policy'))) {
+        if (error instanceof Event || (error instanceof Error && browser_core_1.includes(error.message, 'Content Security Policy'))) {
             browser_core_1.display.error('Please make sure CSP is correctly configured ' +
                 'https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy');
         }
         else {
-            (0, browser_core_1.addMonitoringError)(error);
+            browser_core_1.addMonitoringError(error);
         }
         state.callbacks.forEach(function (callback) { return callback(); });
         state = { status: 2 /* Error */ };
     }
     else {
-        (0, browser_core_1.addMonitoringError)(error);
+        browser_core_1.addMonitoringError(error);
     }
 }
 //# sourceMappingURL=startDeflateWorker.js.map

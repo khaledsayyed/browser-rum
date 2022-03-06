@@ -47,7 +47,7 @@ function doStartSegmentCollection(lifeCycle, getSegmentContext, send, worker, em
     var unsubscribeBeforeUnload = lifeCycle.subscribe(browser_rum_core_1.LifeCycleEventType.BEFORE_UNLOAD, function () {
         flushSegment('before_unload');
     }).unsubscribe;
-    var unsubscribeVisibilityChange = (0, browser_core_1.addEventListener)(emitter, "visibilitychange" /* VISIBILITY_CHANGE */, function () {
+    var unsubscribeVisibilityChange = browser_core_1.addEventListener(emitter, "visibilitychange" /* VISIBILITY_CHANGE */, function () {
         if (document.visibilityState === 'hidden') {
             flushSegment('visibility_hidden');
         }
@@ -84,7 +84,7 @@ function doStartSegmentCollection(lifeCycle, getSegmentContext, send, worker, em
         state = {
             status: 1 /* SegmentPending */,
             segment: segment,
-            expirationTimeoutId: setTimeout((0, browser_core_1.monitor)(function () {
+            expirationTimeoutId: setTimeout(browser_core_1.monitor(function () {
                 flushSegment('max_duration');
             }), exports.MAX_SEGMENT_DURATION),
         };

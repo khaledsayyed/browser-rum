@@ -1,3 +1,2 @@
-export { startSegmentCollection, setMaxSegmentSize } from './segmentCollection';
-export { startDeflateWorker } from './startDeflateWorker';
+export { startSegmentCollection } from './segmentCollection';
 //# sourceMappingURL=index.js.map

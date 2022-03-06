@@ -181,7 +181,7 @@ export function initInputObserver(cb, defaultPrivacyLevel) {
         // If a radio was checked, other radios with the same name attribute will be unchecked.
         var name = target.name;
         if (type === 'radio' && name && target.checked) {
-            forEach(document.querySelectorAll("input[type=\"radio\"][name=\"".concat(name, "\"]")), function (el) {
+            forEach(document.querySelectorAll("input[type=\"radio\"][name=\"" + name + "\"]"), function (el) {
                 if (el !== target) {
                     // TODO: Consider the privacy implications for various differing input privacy levels
                     cbWithDedup(el, { isChecked: false });

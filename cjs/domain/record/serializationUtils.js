@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getElementInputValue = exports.setSerializedNodeId = exports.getSerializedNodeId = exports.nodeAndAncestorsHaveSerializedNode = exports.hasSerializedNode = void 0;
+exports.getElementInputValue = exports.makeUrlAbsolute = exports.makeSrcsetUrlsAbsolute = exports.makeStylesheetUrlsAbsolute = exports.setSerializedNodeId = exports.getSerializedNodeId = exports.nodeAndAncestorsHaveSerializedNode = exports.hasSerializedNode = void 0;
+var browser_core_1 = require("@datadog/browser-core");
 var constants_1 = require("../../constants");
 var privacy_1 = require("./privacy");
 var serializedNodeIds = new WeakMap();
@@ -27,6 +28,43 @@ function setSerializedNodeId(node, serializeNodeId) {
     serializedNodeIds.set(node, serializeNodeId);
 }
 exports.setSerializedNodeId = setSerializedNodeId;
+var URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")([^"]*)"|([^)]*))\)/gm;
+var ABSOLUTE_URL = /^[A-Za-z]+:|^\/\//;
+var DATA_URI = /^data:.*,/i;
+function makeStylesheetUrlsAbsolute(cssText, baseUrl) {
+    if (browser_core_1.isExperimentalFeatureEnabled('base-tag')) {
+        return cssText;
+    }
+    return cssText.replace(URL_IN_CSS_REF, function (origin, quote1, path1, quote2, path2, path3) {
+        var filePath = path1 || path2 || path3;
+        if (!filePath || ABSOLUTE_URL.test(filePath) || DATA_URI.test(filePath)) {
+            return origin;
+        }
+        var maybeQuote = quote1 || quote2 || '';
+        return "url(" + maybeQuote + makeUrlAbsolute(filePath, baseUrl) + maybeQuote + ")";
+    });
+}
+exports.makeStylesheetUrlsAbsolute = makeStylesheetUrlsAbsolute;
+var SRCSET_URLS = /(^\s*|,\s*)([^\s,]+)/g;
+function makeSrcsetUrlsAbsolute(attributeValue, baseUrl) {
+    if (browser_core_1.isExperimentalFeatureEnabled('base-tag')) {
+        return attributeValue;
+    }
+    return attributeValue.replace(SRCSET_URLS, function (_, prefix, url) { return "" + prefix + makeUrlAbsolute(url, baseUrl); });
+}
+exports.makeSrcsetUrlsAbsolute = makeSrcsetUrlsAbsolute;
+function makeUrlAbsolute(url, baseUrl) {
+    try {
+        if (browser_core_1.isExperimentalFeatureEnabled('base-tag')) {
+            return url;
+        }
+        return browser_core_1.buildUrl(url.trim(), baseUrl).href;
+    }
+    catch (_) {
+        return url;
+    }
+}
+exports.makeUrlAbsolute = makeUrlAbsolute;
 /**
  * Get the element "value" to be serialized as an attribute or an input update record. It respects
  * the input privacy mode of the element.
@@ -41,7 +79,7 @@ function getElementInputValue(element, nodePrivacyLevel) {
      */
     var tagName = element.tagName;
     var value = element.value;
-    if ((0, privacy_1.shouldMaskNode)(element, nodePrivacyLevel)) {
+    if (privacy_1.shouldMaskNode(element, nodePrivacyLevel)) {
         var type = element.type;
         if (tagName === 'INPUT' && (type === 'button' || type === 'submit' || type === 'reset')) {
             // Overrule `MASK` privacy level for button-like element values, as they are used during replay

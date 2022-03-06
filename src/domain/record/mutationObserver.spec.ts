@@ -4,6 +4,8 @@ import {
   NodePrivacyLevel,
   PRIVACY_ATTR_NAME,
   PRIVACY_ATTR_VALUE_ALLOW,
+  PRIVACY_ATTR_VALUE_INPUT_IGNORED,
+  PRIVACY_ATTR_VALUE_INPUT_MASKED,
   PRIVACY_ATTR_VALUE_MASK,
   PRIVACY_ATTR_VALUE_MASK_USER_INPUT,
 } from '../../constants'
@@ -782,6 +784,24 @@ describe('startMutationCollection', () => {
       expectedAttributesMutation: AttributeMutation['attributes'] | null
     }> = [
       {
+        privacyAttributeValue: PRIVACY_ATTR_VALUE_INPUT_IGNORED,
+        privacyAttributeOn: 'input',
+        expectedSerializedAttributes: {
+          [PRIVACY_ATTR_NAME]: PRIVACY_ATTR_VALUE_INPUT_IGNORED,
+          value: '***',
+        },
+        expectedAttributesMutation: { value: '***' },
+      },
+      {
+        privacyAttributeValue: PRIVACY_ATTR_VALUE_INPUT_MASKED,
+        privacyAttributeOn: 'input',
+        expectedSerializedAttributes: {
+          [PRIVACY_ATTR_NAME]: PRIVACY_ATTR_VALUE_INPUT_MASKED,
+          value: '***',
+        },
+        expectedAttributesMutation: { value: '***' },
+      },
+      {
         privacyAttributeValue: PRIVACY_ATTR_VALUE_MASK,
         privacyAttributeOn: 'input',
         expectedSerializedAttributes: {
@@ -807,6 +827,18 @@ describe('startMutationCollection', () => {
           value: 'foo',
         },
         expectedAttributesMutation: { value: 'foo' },
+      },
+      {
+        privacyAttributeValue: PRIVACY_ATTR_VALUE_INPUT_IGNORED,
+        privacyAttributeOn: 'ancestor',
+        expectedSerializedAttributes: { value: '***' },
+        expectedAttributesMutation: { value: '***' },
+      },
+      {
+        privacyAttributeValue: PRIVACY_ATTR_VALUE_INPUT_MASKED,
+        privacyAttributeOn: 'ancestor',
+        expectedSerializedAttributes: { value: '***' },
+        expectedAttributesMutation: { value: '***' },
       },
       {
         privacyAttributeValue: PRIVACY_ATTR_VALUE_MASK,

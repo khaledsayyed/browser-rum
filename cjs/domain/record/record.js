@@ -20,9 +20,9 @@ function record(options) {
         mutationController.flush(); // process any pending mutation before taking a full snapshot
         emit({
             data: {
-                height: (0, viewports_1.getWindowHeight)(),
+                height: viewports_1.getWindowHeight(),
                 href: window.location.href,
-                width: (0, viewports_1.getWindowWidth)(),
+                width: viewports_1.getWindowWidth(),
             },
             type: types_1.RecordType.Meta,
         });
@@ -34,40 +34,40 @@ function record(options) {
         });
         emit({
             data: {
-                node: (0, serialize_1.serializeDocument)(document, options.defaultPrivacyLevel),
+                node: serialize_1.serializeDocument(document, options.defaultPrivacyLevel),
                 initialOffset: {
-                    left: (0, viewports_1.getScrollX)(),
-                    top: (0, viewports_1.getScrollY)(),
+                    left: viewports_1.getScrollX(),
+                    top: viewports_1.getScrollY(),
                 },
             },
             type: types_1.RecordType.FullSnapshot,
         });
-        if ((0, browser_core_1.isExperimentalFeatureEnabled)('visualviewport') && window.visualViewport) {
+        if (browser_core_1.isExperimentalFeatureEnabled('visualviewport') && window.visualViewport) {
             emit({
-                data: (0, viewports_1.getVisualViewport)(),
+                data: viewports_1.getVisualViewport(),
                 type: types_1.RecordType.VisualViewport,
             });
         }
     };
     takeFullSnapshot();
-    var stopObservers = (0, observer_1.initObservers)({
+    var stopObservers = observer_1.initObservers({
         mutationController: mutationController,
         defaultPrivacyLevel: options.defaultPrivacyLevel,
         inputCb: function (v) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.Input }, v),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.Input }, v),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },
         mediaInteractionCb: function (p) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.MediaInteraction }, p),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.MediaInteraction }, p),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },
         mouseInteractionCb: function (d) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.MouseInteraction }, d),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.MouseInteraction }, d),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },
@@ -82,25 +82,25 @@ function record(options) {
         },
         mutationCb: function (m) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.Mutation }, m),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.Mutation }, m),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },
         scrollCb: function (p) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.Scroll }, p),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.Scroll }, p),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },
         styleSheetRuleCb: function (r) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.StyleSheetRule }, r),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.StyleSheetRule }, r),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },
         viewportResizeCb: function (d) {
             return emit({
-                data: (0, tslib_1.__assign)({ source: types_2.IncrementalSource.ViewportResize }, d),
+                data: tslib_1.__assign({ source: types_2.IncrementalSource.ViewportResize }, d),
                 type: types_1.RecordType.IncrementalSnapshot,
             });
         },

@@ -1,7 +1,7 @@
 import { canUseEventBridge, noop, runOnReadyState } from '@datadog/browser-core';
 import { LifeCycleEventType, } from '@datadog/browser-rum-core';
 import { getReplayStats } from '../domain/replayStats';
-import { startDeflateWorker } from '../domain/segmentCollection';
+import { startDeflateWorker } from '../domain/segmentCollection/startDeflateWorker';
 export function makeRecorderApi(startRecordingImpl, startDeflateWorkerImpl) {
     if (startDeflateWorkerImpl === void 0) { startDeflateWorkerImpl = startDeflateWorker; }
     if (canUseEventBridge()) {

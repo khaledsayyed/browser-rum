@@ -7,6 +7,10 @@ export declare const NodePrivacyLevel: {
 };
 export declare type NodePrivacyLevel = typeof NodePrivacyLevel[keyof typeof NodePrivacyLevel];
 export declare const PRIVACY_ATTR_NAME = "data-dd-privacy";
+export declare const PRIVACY_CLASS_INPUT_IGNORED = "dd-privacy-input-ignored";
+export declare const PRIVACY_CLASS_INPUT_MASKED = "dd-privacy-input-masked";
+export declare const PRIVACY_ATTR_VALUE_INPUT_IGNORED = "input-ignored";
+export declare const PRIVACY_ATTR_VALUE_INPUT_MASKED = "input-masked";
 export declare const PRIVACY_ATTR_VALUE_ALLOW = "allow";
 export declare const PRIVACY_ATTR_VALUE_MASK = "mask";
 export declare const PRIVACY_ATTR_VALUE_MASK_USER_INPUT = "mask-user-input";

@@ -11,9 +11,16 @@ import {
   PRIVACY_CLASS_HIDDEN,
   FORM_PRIVATE_TAG_NAMES,
   CENSORED_STRING_MARK,
+  // Deprecated (now aliased) below
+  PRIVACY_CLASS_INPUT_IGNORED,
+  PRIVACY_CLASS_INPUT_MASKED,
+  PRIVACY_ATTR_VALUE_INPUT_IGNORED,
+  PRIVACY_ATTR_VALUE_INPUT_MASKED,
 } from '../../constants'
 
 export const MAX_ATTRIBUTE_VALUE_CHAR_LENGTH = 100_000
+
+import { makeStylesheetUrlsAbsolute } from './serializationUtils'
 
 import { shouldIgnoreElement } from './serialize'
 
@@ -62,19 +69,17 @@ export function reducePrivacyLevel(
  * Determines the node's own privacy level without checking for ancestors.
  */
 export function getNodeSelfPrivacyLevel(node: Node): NodePrivacyLevel | undefined {
-  // Only Element types can have a privacy level set
+  // Only Element types can be have a privacy level set
   if (!isElement(node)) {
     return
   }
 
   const privAttr = node.getAttribute(PRIVACY_ATTR_NAME)
 
-  // Overrules for replay purpose
+  // Overrules to enforce end-user protection
   if (node.tagName === 'BASE') {
     return NodePrivacyLevel.ALLOW
   }
-
-  // Overrules to enforce end-user protection
   if (node.tagName === 'INPUT') {
     const inputElement = node as HTMLInputElement
     if (inputElement.type === 'password' || inputElement.type === 'email' || inputElement.type === 'tel') {
@@ -90,24 +95,35 @@ export function getNodeSelfPrivacyLevel(node: Node): NodePrivacyLevel | undefine
     }
   }
 
-  // Check HTML privacy attributes and classes
-  if (privAttr === PRIVACY_ATTR_VALUE_HIDDEN || node.classList.contains(PRIVACY_CLASS_HIDDEN)) {
-    return NodePrivacyLevel.HIDDEN
+  // Check HTML privacy attributes
+  switch (privAttr) {
+    case PRIVACY_ATTR_VALUE_ALLOW:
+      return NodePrivacyLevel.ALLOW
+    case PRIVACY_ATTR_VALUE_MASK:
+      return NodePrivacyLevel.MASK
+    case PRIVACY_ATTR_VALUE_MASK_USER_INPUT:
+    case PRIVACY_ATTR_VALUE_INPUT_IGNORED: // Deprecated, now aliased
+    case PRIVACY_ATTR_VALUE_INPUT_MASKED: // Deprecated, now aliased
+      return NodePrivacyLevel.MASK_USER_INPUT
+    case PRIVACY_ATTR_VALUE_HIDDEN:
+      return NodePrivacyLevel.HIDDEN
   }
 
-  if (privAttr === PRIVACY_ATTR_VALUE_MASK || node.classList.contains(PRIVACY_CLASS_MASK)) {
-    return NodePrivacyLevel.MASK
-  }
-
-  if (privAttr === PRIVACY_ATTR_VALUE_MASK_USER_INPUT || node.classList.contains(PRIVACY_CLASS_MASK_USER_INPUT)) {
-    return NodePrivacyLevel.MASK_USER_INPUT
-  }
-
-  if (privAttr === PRIVACY_ATTR_VALUE_ALLOW || node.classList.contains(PRIVACY_CLASS_ALLOW)) {
+  // Check HTML privacy classes
+  if (node.classList.contains(PRIVACY_CLASS_ALLOW)) {
     return NodePrivacyLevel.ALLOW
-  }
-
-  if (shouldIgnoreElement(node)) {
+  } else if (node.classList.contains(PRIVACY_CLASS_MASK)) {
+    return NodePrivacyLevel.MASK
+  } else if (node.classList.contains(PRIVACY_CLASS_HIDDEN)) {
+    return NodePrivacyLevel.HIDDEN
+  } else if (
+    node.classList.contains(PRIVACY_CLASS_MASK_USER_INPUT) ||
+    node.classList.contains(PRIVACY_CLASS_INPUT_MASKED) || // Deprecated, now aliased
+    node.classList.contains(PRIVACY_CLASS_INPUT_IGNORED) // Deprecated, now aliased
+  ) {
+    return NodePrivacyLevel.MASK_USER_INPUT
+  } else if (shouldIgnoreElement(node)) {
+    // such as for scripts
     return NodePrivacyLevel.IGNORE
   }
 }
@@ -192,12 +208,11 @@ export function getTextContent(
   } else if (nodePrivacyLevel === NodePrivacyLevel.HIDDEN) {
     // Should never occur, but just in case, we set to CENSORED_MARK.
     textContent = CENSORED_STRING_MARK
-  } else if (
-    shouldMaskNode(textNode, nodePrivacyLevel) &&
-    // Style tags are `overruled` (Use `hide` to enforce privacy)
-    !isStyle
-  ) {
-    if (
+  } else if (shouldMaskNode(textNode, nodePrivacyLevel)) {
+    if (isStyle) {
+      // Style tags are `overruled` (Use `hide` to enforce privacy)
+      textContent = makeStylesheetUrlsAbsolute(textContent, location.href)
+    } else if (
       // Scrambling the child list breaks text nodes for DATALIST/SELECT/OPTGROUP
       parentTagName === 'DATALIST' ||
       parentTagName === 'SELECT' ||

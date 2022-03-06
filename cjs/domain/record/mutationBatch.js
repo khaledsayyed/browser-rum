@@ -39,10 +39,10 @@ function scheduleMutationFlush(flush) {
     // browser rendering process (Layout, Recalculate Style, etc.), so we can serialize DOM nodes
     // efficiently.
     if (browserWindow.requestIdleCallback) {
-        var id_1 = browserWindow.requestIdleCallback((0, browser_core_1.monitor)(flush), { timeout: MUTATION_PROCESS_MAX_DELAY });
+        var id_1 = browserWindow.requestIdleCallback(browser_core_1.monitor(flush), { timeout: MUTATION_PROCESS_MAX_DELAY });
         return function () { return browserWindow.cancelIdleCallback(id_1); };
     }
-    var id = browserWindow.requestAnimationFrame((0, browser_core_1.monitor)(flush));
+    var id = browserWindow.requestAnimationFrame(browser_core_1.monitor(flush));
     return function () { return browserWindow.cancelAnimationFrame(id); };
 }
 //# sourceMappingURL=mutationBatch.js.map

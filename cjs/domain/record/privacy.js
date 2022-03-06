@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTextContent = exports.censorText = exports.shouldMaskNode = exports.getNodeSelfPrivacyLevel = exports.reducePrivacyLevel = exports.getNodePrivacyLevel = exports.MAX_ATTRIBUTE_VALUE_CHAR_LENGTH = void 0;
 var constants_1 = require("../../constants");
 exports.MAX_ATTRIBUTE_VALUE_CHAR_LENGTH = 100000;
+var serializationUtils_1 = require("./serializationUtils");
 var serialize_1 = require("./serialize");
 var TEXT_MASKING_CHAR = 'x';
 /**
@@ -45,16 +46,15 @@ exports.reducePrivacyLevel = reducePrivacyLevel;
  * Determines the node's own privacy level without checking for ancestors.
  */
 function getNodeSelfPrivacyLevel(node) {
-    // Only Element types can have a privacy level set
+    // Only Element types can be have a privacy level set
     if (!isElement(node)) {
         return;
     }
     var privAttr = node.getAttribute(constants_1.PRIVACY_ATTR_NAME);
-    // Overrules for replay purpose
+    // Overrules to enforce end-user protection
     if (node.tagName === 'BASE') {
         return constants_1.NodePrivacyLevel.ALLOW;
     }
-    // Overrules to enforce end-user protection
     if (node.tagName === 'INPUT') {
         var inputElement = node;
         if (inputElement.type === 'password' || inputElement.type === 'email' || inputElement.type === 'tel') {
@@ -69,20 +69,37 @@ function getNodeSelfPrivacyLevel(node) {
             return constants_1.NodePrivacyLevel.MASK;
         }
     }
-    // Check HTML privacy attributes and classes
-    if (privAttr === constants_1.PRIVACY_ATTR_VALUE_HIDDEN || node.classList.contains(constants_1.PRIVACY_CLASS_HIDDEN)) {
-        return constants_1.NodePrivacyLevel.HIDDEN;
+    // Check HTML privacy attributes
+    switch (privAttr) {
+        case constants_1.PRIVACY_ATTR_VALUE_ALLOW:
+            return constants_1.NodePrivacyLevel.ALLOW;
+        case constants_1.PRIVACY_ATTR_VALUE_MASK:
+            return constants_1.NodePrivacyLevel.MASK;
+        case constants_1.PRIVACY_ATTR_VALUE_MASK_USER_INPUT:
+        case constants_1.PRIVACY_ATTR_VALUE_INPUT_IGNORED: // Deprecated, now aliased
+        case constants_1.PRIVACY_ATTR_VALUE_INPUT_MASKED: // Deprecated, now aliased
+            return constants_1.NodePrivacyLevel.MASK_USER_INPUT;
+        case constants_1.PRIVACY_ATTR_VALUE_HIDDEN:
+            return constants_1.NodePrivacyLevel.HIDDEN;
     }
-    if (privAttr === constants_1.PRIVACY_ATTR_VALUE_MASK || node.classList.contains(constants_1.PRIVACY_CLASS_MASK)) {
-        return constants_1.NodePrivacyLevel.MASK;
-    }
-    if (privAttr === constants_1.PRIVACY_ATTR_VALUE_MASK_USER_INPUT || node.classList.contains(constants_1.PRIVACY_CLASS_MASK_USER_INPUT)) {
-        return constants_1.NodePrivacyLevel.MASK_USER_INPUT;
-    }
-    if (privAttr === constants_1.PRIVACY_ATTR_VALUE_ALLOW || node.classList.contains(constants_1.PRIVACY_CLASS_ALLOW)) {
+    // Check HTML privacy classes
+    if (node.classList.contains(constants_1.PRIVACY_CLASS_ALLOW)) {
         return constants_1.NodePrivacyLevel.ALLOW;
     }
-    if ((0, serialize_1.shouldIgnoreElement)(node)) {
+    else if (node.classList.contains(constants_1.PRIVACY_CLASS_MASK)) {
+        return constants_1.NodePrivacyLevel.MASK;
+    }
+    else if (node.classList.contains(constants_1.PRIVACY_CLASS_HIDDEN)) {
+        return constants_1.NodePrivacyLevel.HIDDEN;
+    }
+    else if (node.classList.contains(constants_1.PRIVACY_CLASS_MASK_USER_INPUT) ||
+        node.classList.contains(constants_1.PRIVACY_CLASS_INPUT_MASKED) || // Deprecated, now aliased
+        node.classList.contains(constants_1.PRIVACY_CLASS_INPUT_IGNORED) // Deprecated, now aliased
+    ) {
+        return constants_1.NodePrivacyLevel.MASK_USER_INPUT;
+    }
+    else if (serialize_1.shouldIgnoreElement(node)) {
+        // such as for scripts
         return constants_1.NodePrivacyLevel.IGNORE;
     }
 }
@@ -159,10 +176,12 @@ function getTextContent(textNode, ignoreWhiteSpace, parentNodePrivacyLevel) {
         // Should never occur, but just in case, we set to CENSORED_MARK.
         textContent = constants_1.CENSORED_STRING_MARK;
     }
-    else if (shouldMaskNode(textNode, nodePrivacyLevel) &&
-        // Style tags are `overruled` (Use `hide` to enforce privacy)
-        !isStyle) {
-        if (
+    else if (shouldMaskNode(textNode, nodePrivacyLevel)) {
+        if (isStyle) {
+            // Style tags are `overruled` (Use `hide` to enforce privacy)
+            textContent = serializationUtils_1.makeStylesheetUrlsAbsolute(textContent, location.href);
+        }
+        else if (
         // Scrambling the child list breaks text nodes for DATALIST/SELECT/OPTGROUP
         parentTagName === 'DATALIST' ||
             parentTagName === 'SELECT' ||
@@ -176,7 +195,7 @@ function getTextContent(textNode, ignoreWhiteSpace, parentNodePrivacyLevel) {
             textContent = constants_1.CENSORED_STRING_MARK;
         }
         else {
-            textContent = (0, exports.censorText)(textContent);
+            textContent = exports.censorText(textContent);
         }
     }
     return textContent;

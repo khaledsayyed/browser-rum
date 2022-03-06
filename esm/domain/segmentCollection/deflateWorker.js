@@ -3,7 +3,7 @@ var workerURL;
 export function createDeflateWorker() {
     // Lazily compute the worker URL to allow importing the SDK in NodeJS
     if (!workerURL) {
-        workerURL = URL.createObjectURL(new Blob(["(".concat(workerCodeFn, ")(self)")]));
+        workerURL = URL.createObjectURL(new Blob(["(" + workerCodeFn + ")(self)"]));
     }
     return new Worker(workerURL);
 }
@@ -1390,7 +1390,6 @@ function workerCodeFn() {
             '-5': 'buffer error',
             /* Z_BUF_ERROR     (-5) */
             '-6': 'incompatible version',
-            /* Z_VERSION_ERROR (-6) */
         };
         // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
         //
@@ -1446,7 +1445,7 @@ function workerCodeFn() {
             // Z_ASCII:                1, // = Z_TEXT (deprecated)
             Z_UNKNOWN: 2,
             /* The deflate compression method */
-            Z_DEFLATED: 8, // Z_NULL:                 null // Use -1 or null inline, depending on var type
+            Z_DEFLATED: 8,
         };
         // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
         //
@@ -2424,7 +2423,6 @@ function workerCodeFn() {
             new Config(32, 128, 258, 1024, deflate_slow),
             /* 8 */
             new Config(32, 258, 258, 4096, deflate_slow),
-            /* 9 max compression */
         ];
         /* ===========================================================================
          * Initialize the "longest match" routines for a new zlib stream
@@ -3223,7 +3221,7 @@ function workerCodeFn() {
                     continue;
                 }
                 if (_typeof(source) !== 'object') {
-                    throw new TypeError("".concat(source, "must be non-object"));
+                    throw new TypeError(source + "must be non-object");
                 }
                 for (var p in source) {
                     if (_has(source, p)) {

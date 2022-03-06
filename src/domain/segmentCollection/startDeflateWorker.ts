@@ -82,7 +82,6 @@ export function doStartDeflateWorker(createDeflateWorkerImpl = createDeflateWork
     worker.postMessage({ action: 'init' })
     return worker
   } catch (error) {
-    // @ts-ignore because
     onError(error)
   }
 }

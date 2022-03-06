@@ -4,7 +4,7 @@ exports.Segment = void 0;
 var tslib_1 = require("tslib");
 var browser_core_1 = require("@datadog/browser-core");
 var types_1 = require("../../types");
-var replayStats = (0, tslib_1.__importStar)(require("../replayStats"));
+var replayStats = tslib_1.__importStar(require("../replayStats"));
 var nextId = 0;
 var Segment = /** @class */ (function () {
     function Segment(worker, context, creationReason, initialRecord, onWrote, onFlushed) {
@@ -21,7 +21,7 @@ var Segment = /** @class */ (function () {
         var viewId = this.context.view.id;
         replayStats.addSegment(viewId);
         replayStats.addRecord(viewId);
-        var listener = (0, browser_core_1.monitor)(function (_a) {
+        var listener = browser_core_1.monitor(function (_a) {
             var data = _a.data;
             if (data.type === 'errored' || data.type === 'initialized') {
                 return;
@@ -46,22 +46,22 @@ var Segment = /** @class */ (function () {
                 // "flush" response, remove the listener to avoid any leak, and send a monitor message to
                 // help investigate the issue.
                 worker.removeEventListener('message', listener);
-                (0, browser_core_1.addMonitoringMessage)("Segment did not receive a 'flush' response before being replaced.");
+                browser_core_1.addMonitoringMessage("Segment did not receive a 'flush' response before being replaced.");
             }
         });
         worker.addEventListener('message', listener);
-        this.worker.postMessage({ data: "{\"records\":[".concat(JSON.stringify(initialRecord)), id: this.id, action: 'write' });
+        this.worker.postMessage({ data: "{\"records\":[" + JSON.stringify(initialRecord), id: this.id, action: 'write' });
     }
     Segment.prototype.addRecord = function (record) {
         this.end = record.timestamp;
         this.recordsCount += 1;
         replayStats.addRecord(this.context.view.id);
         this.hasFullSnapshot || (this.hasFullSnapshot = record.type === types_1.RecordType.FullSnapshot);
-        this.worker.postMessage({ data: ",".concat(JSON.stringify(record)), id: this.id, action: 'write' });
+        this.worker.postMessage({ data: "," + JSON.stringify(record), id: this.id, action: 'write' });
     };
     Segment.prototype.flush = function (reason) {
         this.worker.postMessage({
-            data: "],".concat(JSON.stringify(this.meta).slice(1), "\n"),
+            data: "]," + JSON.stringify(this.meta).slice(1) + "\n",
             id: this.id,
             action: 'flush',
         });
@@ -70,7 +70,7 @@ var Segment = /** @class */ (function () {
     };
     Object.defineProperty(Segment.prototype, "meta", {
         get: function () {
-            return (0, tslib_1.__assign)({ creation_reason: this.creationReason, end: this.end, has_full_snapshot: this.hasFullSnapshot, records_count: this.recordsCount, start: this.start }, this.context);
+            return tslib_1.__assign({ creation_reason: this.creationReason, end: this.end, has_full_snapshot: this.hasFullSnapshot, records_count: this.recordsCount, start: this.start }, this.context);
         },
         enumerable: false,
         configurable: true

@@ -2,6 +2,11 @@ import { __assign } from "tslib";
 import { DefaultPrivacyLevel } from '@datadog/browser-core';
 export var NodePrivacyLevel = __assign(__assign({}, DefaultPrivacyLevel), { IGNORE: 'ignore', HIDDEN: 'hidden' });
 export var PRIVACY_ATTR_NAME = 'data-dd-privacy';
+// Deprecate via temporary Alias
+export var PRIVACY_CLASS_INPUT_IGNORED = 'dd-privacy-input-ignored'; // DEPRECATED, aliased to mask-user-input
+export var PRIVACY_CLASS_INPUT_MASKED = 'dd-privacy-input-masked'; // DEPRECATED, aliased to mask-user-input
+export var PRIVACY_ATTR_VALUE_INPUT_IGNORED = 'input-ignored'; // DEPRECATED, aliased to mask-user-input
+export var PRIVACY_ATTR_VALUE_INPUT_MASKED = 'input-masked'; // DEPRECATED, aliased to mask-user-input
 // Privacy Attrs
 export var PRIVACY_ATTR_VALUE_ALLOW = 'allow';
 export var PRIVACY_ATTR_VALUE_MASK = 'mask';

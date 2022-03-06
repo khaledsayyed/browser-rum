@@ -8,7 +8,7 @@ var startRecording_1 = require("../boot/startRecording");
 var recorderApi_1 = require("../boot/recorderApi");
 var browser_core_2 = require("@datadog/browser-core");
 Object.defineProperty(exports, "DefaultPrivacyLevel", { enumerable: true, get: function () { return browser_core_2.DefaultPrivacyLevel; } });
-var recorderApi = (0, recorderApi_1.makeRecorderApi)(startRecording_1.startRecording);
-exports.datadogRum = (0, browser_rum_core_1.makeRumPublicApi)(browser_rum_core_1.startRum, recorderApi);
-(0, browser_core_1.defineGlobal)((0, browser_core_1.getGlobalObject)(), 'DD_RUM', exports.datadogRum);
+var recorderApi = recorderApi_1.makeRecorderApi(startRecording_1.startRecording);
+exports.datadogRum = browser_rum_core_1.makeRumPublicApi(browser_rum_core_1.startRum, recorderApi);
+browser_core_1.defineGlobal(browser_core_1.getGlobalObject(), 'DD_RUM', exports.datadogRum);
 //# sourceMappingURL=main.js.map

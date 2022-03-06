@@ -2,7 +2,7 @@ import { __assign } from "tslib";
 import { NodePrivacyLevel, PRIVACY_ATTR_NAME, PRIVACY_ATTR_VALUE_HIDDEN, CENSORED_STRING_MARK, CENSORED_IMG_MARK, } from '../../constants';
 import { getTextContent, shouldMaskNode, reducePrivacyLevel, getNodeSelfPrivacyLevel, MAX_ATTRIBUTE_VALUE_CHAR_LENGTH, } from './privacy';
 import { NodeType, } from './types';
-import { getSerializedNodeId, setSerializedNodeId, getElementInputValue } from './serializationUtils';
+import { makeStylesheetUrlsAbsolute, getSerializedNodeId, setSerializedNodeId, getElementInputValue, makeSrcsetUrlsAbsolute, makeUrlAbsolute, } from './serializationUtils';
 import { forEach } from './utils';
 export function serializeDocument(document, defaultPrivacyLevel) {
     // We are sure that Documents are never ignored, so this function never returns null
@@ -84,8 +84,8 @@ export function serializeElementNode(element, options) {
             type: NodeType.Element,
             tagName: tagName,
             attributes: (_a = {
-                    rr_width: "".concat(width, "px"),
-                    rr_height: "".concat(height, "px")
+                    rr_width: width + "px",
+                    rr_height: height + "px"
                 },
                 _a[PRIVACY_ATTR_NAME] = PRIVACY_ATTR_VALUE_HIDDEN,
                 _a),
@@ -223,6 +223,7 @@ export function serializeChildNodes(node, options) {
     return result;
 }
 export function serializeAttribute(element, nodePrivacyLevel, attributeName) {
+    var _a, _b, _c;
     if (nodePrivacyLevel === NodePrivacyLevel.HIDDEN) {
         // dup condition for direct access case
         return null;
@@ -259,7 +260,19 @@ export function serializeAttribute(element, nodePrivacyLevel, attributeName) {
     if (attributeValue.length > MAX_ATTRIBUTE_VALUE_CHAR_LENGTH && attributeValue.slice(0, 5) === 'data:') {
         return 'data:truncated';
     }
-    return attributeValue;
+    // Rebuild absolute URLs from relative (without using <base> tag)
+    var doc = element.ownerDocument;
+    switch (attributeName) {
+        case 'src':
+        case 'href':
+            return makeUrlAbsolute(attributeValue, (_a = doc.location) === null || _a === void 0 ? void 0 : _a.href);
+        case 'srcset':
+            return makeSrcsetUrlsAbsolute(attributeValue, (_b = doc.location) === null || _b === void 0 ? void 0 : _b.href);
+        case 'style':
+            return makeStylesheetUrlsAbsolute(attributeValue, (_c = doc.location) === null || _c === void 0 ? void 0 : _c.href);
+        default:
+            return attributeValue;
+    }
 }
 var _nextId = 1;
 function generateNextId() {
@@ -333,7 +346,7 @@ function getAttributesForPrivacyLevel(element, nodePrivacyLevel) {
         if (cssText && stylesheet) {
             delete safeAttrs.rel;
             delete safeAttrs.href;
-            safeAttrs._cssText = cssText;
+            safeAttrs._cssText = makeStylesheetUrlsAbsolute(cssText, stylesheet.href);
         }
     }
     // dynamic stylesheet
@@ -343,7 +356,7 @@ function getAttributesForPrivacyLevel(element, nodePrivacyLevel) {
         !(element.innerText || element.textContent || '').trim().length) {
         var cssText = getCssRulesString(element.sheet);
         if (cssText) {
-            safeAttrs._cssText = cssText;
+            safeAttrs._cssText = makeStylesheetUrlsAbsolute(cssText, location.href);
         }
     }
     /**

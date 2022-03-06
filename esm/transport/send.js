@@ -4,7 +4,7 @@ export function send(endpointBuilder, data, meta, rawSegmentSize, flushReason) {
     var formData = new FormData();
     formData.append('segment', new Blob([data], {
         type: 'application/octet-stream',
-    }), "".concat(meta.session.id, "-").concat(meta.start));
+    }), meta.session.id + "-" + meta.start);
     toFormEntries(meta, function (key, value) { return formData.append(key, value); });
     formData.append('raw_segment_size', rawSegmentSize.toString());
     var request = new HttpRequest(endpointBuilder, SEND_BEACON_BYTE_LENGTH_LIMIT);
@@ -15,10 +15,10 @@ export function toFormEntries(input, onEntry, prefix) {
     objectEntries(input).forEach(function (_a) {
         var key = _a[0], value = _a[1];
         if (typeof value === 'object' && value !== null) {
-            toFormEntries(value, onEntry, "".concat(prefix).concat(key, "."));
+            toFormEntries(value, onEntry, "" + prefix + key + ".");
         }
         else {
-            onEntry("".concat(prefix).concat(key), String(value));
+            onEntry("" + prefix + key, String(value));
         }
     });
 }

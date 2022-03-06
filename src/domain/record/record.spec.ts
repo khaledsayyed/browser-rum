@@ -1,4 +1,5 @@
-import { DefaultPrivacyLevel, isIE } from '@datadog/browser-core'
+import { isIE } from '@datadog/browser-core'
+import { DefaultPrivacyLevel } from 'packages/core/src/domain/configuration'
 import { Clock, createNewEvent } from '../../../../core/test/specHelper'
 import { collectAsyncCalls } from '../../../test/utils'
 import { RecordType, IncrementalSource, RawRecord, IncrementalSnapshotRecord, FocusRecord } from '../../types'

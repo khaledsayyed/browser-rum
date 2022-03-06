@@ -16,7 +16,7 @@ Object.defineProperty(exports, "DefaultPrivacyLevel", { enumerable: true, get: f
 // Disable the rule that forbids potential side effects, because we know that those functions don't
 // have side effects.
 /* eslint-disable local-rules/disallow-side-effects */
-var recorderApi = (0, recorderApi_1.makeRecorderApi)(startRecording_1.startRecording);
-exports.datadogRum = (0, browser_rum_core_1.makeRumPublicApi)(browser_rum_core_1.startRum, recorderApi, { ignoreInitIfSyntheticsWillInjectRum: false });
+var recorderApi = recorderApi_1.makeRecorderApi(startRecording_1.startRecording);
+exports.datadogRum = browser_rum_core_1.makeRumPublicApi(browser_rum_core_1.startRum, recorderApi, { ignoreInitIfSyntheticsWillInjectRum: false });
 /* eslint-enable local-rules/disallow-side-effects */
 //# sourceMappingURL=internalSynthetics.js.map
