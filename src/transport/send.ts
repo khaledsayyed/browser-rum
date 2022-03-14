@@ -8,7 +8,8 @@ export function send(
   data: Uint8Array,
   meta: SegmentMeta,
   rawSegmentSize: number,
-  flushReason?: string
+  flushReason?: string,
+  httpRequestOptions: { proxyApiKey?: string } = {}
 ): void {
   const formData = new FormData()
 
@@ -23,7 +24,7 @@ export function send(
   toFormEntries(meta, (key, value) => formData.append(key, value))
   formData.append('raw_segment_size', rawSegmentSize.toString())
 
-  const request = new HttpRequest(endpointBuilder, SEND_BEACON_BYTE_LENGTH_LIMIT)
+  const request = new HttpRequest(endpointBuilder, SEND_BEACON_BYTE_LENGTH_LIMIT, httpRequestOptions)
   request.send(formData, data.byteLength, flushReason)
 }
 

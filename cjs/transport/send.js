@@ -3,14 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.toFormEntries = exports.send = exports.SEND_BEACON_BYTE_LENGTH_LIMIT = void 0;
 var browser_core_1 = require("@datadog/browser-core");
 exports.SEND_BEACON_BYTE_LENGTH_LIMIT = 60000;
-function send(endpointBuilder, data, meta, rawSegmentSize, flushReason) {
+function send(endpointBuilder, data, meta, rawSegmentSize, flushReason, httpRequestOptions) {
+    if (httpRequestOptions === void 0) { httpRequestOptions = {}; }
     var formData = new FormData();
     formData.append('segment', new Blob([data], {
         type: 'application/octet-stream',
     }), meta.session.id + "-" + meta.start);
     toFormEntries(meta, function (key, value) { return formData.append(key, value); });
     formData.append('raw_segment_size', rawSegmentSize.toString());
-    var request = new browser_core_1.HttpRequest(endpointBuilder, exports.SEND_BEACON_BYTE_LENGTH_LIMIT);
+    var request = new browser_core_1.HttpRequest(endpointBuilder, exports.SEND_BEACON_BYTE_LENGTH_LIMIT, httpRequestOptions);
     request.send(formData, data.byteLength, flushReason);
 }
 exports.send = send;

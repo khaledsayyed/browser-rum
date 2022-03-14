@@ -9,7 +9,9 @@ var send_1 = require("../transport/send");
 var types_1 = require("../types");
 function startRecording(lifeCycle, configuration, sessionManager, parentContexts, worker) {
     var _a = segmentCollection_1.startSegmentCollection(lifeCycle, configuration.applicationId, sessionManager, parentContexts, function (data, meta, rawSegmentSize, flushReason) {
-        return send_1.send(configuration.sessionReplayEndpointBuilder, data, meta, rawSegmentSize, flushReason);
+        return send_1.send(configuration.sessionReplayEndpointBuilder, data, meta, rawSegmentSize, flushReason, {
+            proxyApiKey: configuration.proxyApiKey
+        });
     }, worker), addRecord = _a.addRecord, stopSegmentCollection = _a.stop;
     function addRawRecord(rawRecord) {
         addRecord(tslib_1.__assign(tslib_1.__assign({}, rawRecord), { timestamp: Date.now() }));

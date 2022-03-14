@@ -25,7 +25,9 @@ export function startRecording(
     sessionManager,
     parentContexts,
     (data, meta, rawSegmentSize, flushReason) =>
-      send(configuration.sessionReplayEndpointBuilder, data, meta, rawSegmentSize, flushReason),
+      send(configuration.sessionReplayEndpointBuilder, data, meta, rawSegmentSize, flushReason, {
+        proxyApiKey: configuration.proxyApiKey
+      }),
     worker
   )
 

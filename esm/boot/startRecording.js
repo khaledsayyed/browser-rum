@@ -6,7 +6,9 @@ import { send } from '../transport/send';
 import { RecordType } from '../types';
 export function startRecording(lifeCycle, configuration, sessionManager, parentContexts, worker) {
     var _a = startSegmentCollection(lifeCycle, configuration.applicationId, sessionManager, parentContexts, function (data, meta, rawSegmentSize, flushReason) {
-        return send(configuration.sessionReplayEndpointBuilder, data, meta, rawSegmentSize, flushReason);
+        return send(configuration.sessionReplayEndpointBuilder, data, meta, rawSegmentSize, flushReason, {
+            proxyApiKey: configuration.proxyApiKey
+        });
     }, worker), addRecord = _a.addRecord, stopSegmentCollection = _a.stop;
     function addRawRecord(rawRecord) {
         addRecord(__assign(__assign({}, rawRecord), { timestamp: Date.now() }));
