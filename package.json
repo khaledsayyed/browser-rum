@@ -12,8 +12,8 @@
     "build:esm": "rm -rf esm && tsc -p tsconfig.esm.json"
   },
   "dependencies": {
-    "@datadog/browser-core": "khaledsayyed/browser-core#3360715f0cfc6ee3d5da8799e43be9bb1351a6ba",
-    "@datadog/browser-rum-core": "khaledsayyed/browser-rum-core#e0186654312aa58061cb145f1b9f69525e3647ef",
+    "@datadog/browser-core": "khaledsayyed/browser-core#69f4a5427cdd9a754a35a4914e2f83dea5ed49c2",
+    "@datadog/browser-rum-core": "khaledsayyed/browser-rum-core#22b0e4bb3d19733f8a5f8646b3f194e1537de832",
     "tslib": "^1.10.0"
   },
   "repository": {
