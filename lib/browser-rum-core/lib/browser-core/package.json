@@ -1,0 +1,26 @@
+{
+  "name": "@datadog/browser-core",
+  "version": "3.10.1",
+  "license": "Apache-2.0",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "cjs/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "run-p build:cjs build:esm",
+    "build:cjs": "rm -rf cjs && tsc -p tsconfig.cjs.json",
+    "build:esm": "rm -rf esm && tsc -p tsconfig.esm.json"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/sinon": "9.0.10",
+    "sinon": "9.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DataDog/browser-sdk.git",
+    "directory": "packages/core"
+  }
+}
